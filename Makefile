@@ -50,6 +50,11 @@ $(TARGET).twr: $(TARGET)_map.ncd
 $(TARGET).bit: $(TARGET).ncd
 	bitgen $(BITGEN_OPTS) $(TARGET).ncd
 
+auto: .DUMMY
+	emacs --batch AC97.v -f verilog-batch-auto
+
+.DUMMY:
+
 clean:
 	rm -f $(TARGET).bgn $(TARGET).ngc $(TARGET).svf $(TARGET).ngd $(TARGET).bit $(TARGET).twr $(TARGET).ncd $(TARGET)_map.ncd $(TARGET)_map.*
 	rm -f $(TARGET).bld $(TARGET).drc $(TARGET)_ngdbuild.xrpt $(TARGET)_pad.* $(TARGET).pad $(TARGET).par $(TARGET)_par.xrpt $(TARGET).ngr
