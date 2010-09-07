@@ -1,0 +1,3 @@
+NET "ac97_bitclk" LOC="AF18" | TNM_NET = ac97_bitclk;
+TIMESPEC TS_ac97_bitclk = PERIOD "ac97_bitclk" 12.288MHz HIGH 50%;
+
