@@ -39,7 +39,7 @@ $(TARGET).ngd: $(TARGET).ngc $(TARGET).ucf
 	ngdbuild -dd _ngo -uc $(TARGET).ucf -nt timestamp -p xc5vlx110t-ff1136-1 "$(TARGET).ngc" $(TARGET).ngd
 
 $(TARGET)_map.ncd: $(TARGET).ngd
-	map -p xc5vlx110t-ff1136-1 -cm area -mt 2 -c 100 -t 1 -o $(TARGET)_map.ncd $(TARGET).ngd $(TARGET).pcf
+	map -w -p xc5vlx110t-ff1136-1 -cm area -mt 2 -c 100 -t 1 -o $(TARGET)_map.ncd $(TARGET).ngd $(TARGET).pcf
 
 $(TARGET).ncd: $(TARGET)_map.ncd
 	par -w -ol std  $(TARGET)_map.ncd $(TARGET).ncd $(TARGET).pcf
