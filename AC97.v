@@ -18,17 +18,13 @@ module AC97(
 	wire		ac97_out_slot1_valid;	// From conf of AC97Conf.v
 	wire [19:0]	ac97_out_slot2;		// From conf of AC97Conf.v
 	wire		ac97_out_slot2_valid;	// From conf of AC97Conf.v
+	wire [19:0]	ac97_out_slot3;		// From source of AudioGen.v
+	wire [19:0]	ac97_out_slot4;		// From source of AudioGen.v
 	wire		ac97_strobe;		// From link of ACLink.v
 	// End of automatics
 
-	wire [19:0] sample;
-	/* From wave generator */
 	wire        ac97_out_slot3_valid = 1;
-	wire [19:0] ac97_out_slot3;
 	wire        ac97_out_slot4_valid = 1;
-	wire [19:0] ac97_out_slot4;
-	assign ac97_out_slot3 = sample;
-	assign ac97_out_slot4 = sample;
 
 	wire        ac97_out_slot5_valid = 0;
 	wire [19:0] ac97_out_slot5 = 'h0;
@@ -47,13 +43,14 @@ module AC97(
 	wire        ac97_out_slot12_valid = 0;
 	wire [19:0] ac97_out_slot12 = 'h0;
 
-	SquareWave wavegen(
+	AudioGen source(
 		/*AUTOINST*/
-			   // Outputs
-			   .sample		(sample[19:0]),
-			   // Inputs
-			   .ac97_bitclk		(ac97_bitclk),
-			   .ac97_strobe		(ac97_strobe));
+			// Outputs
+			.ac97_out_slot3	(ac97_out_slot3[19:0]),
+			.ac97_out_slot4	(ac97_out_slot4[19:0]),
+			// Inputs
+			.ac97_bitclk	(ac97_bitclk),
+			.ac97_strobe	(ac97_strobe));
         
 	ACLink link(
 		/*AUTOINST*/
@@ -99,6 +96,34 @@ module AC97(
 		      // Inputs
 		      .ac97_bitclk	(ac97_bitclk),
 		      .ac97_strobe	(ac97_strobe));
+endmodule
+
+module AudioGen(
+	input         ac97_bitclk,
+	input         ac97_strobe,
+	output [19:0] ac97_out_slot3,
+	output [19:0] ac97_out_slot4
+	);
+
+	reg [31:0] samplemem [0:227821];
+	reg [31:0] count = 'h0;
+
+	initial $readmemh("dragonforcesample.hex", samplemem, 0, 227821);
+
+	reg [31:0] curr_sample = 'h0;
+
+	always @(posedge ac97_bitclk) begin
+		if (ac97_strobe) begin
+			if (count == 'd227821)
+				count <= 'h0;
+			else
+				count <= count + 1;
+		end
+		curr_sample <= samplemem[count];
+	end
+
+	assign ac97_out_slot3 = {curr_sample[7:0],curr_sample[15:8],4'h0};
+	assign ac97_out_slot4 = {curr_sample[23:16],curr_sample[31:24],4'h0};
 endmodule
 
 module SquareWave(
