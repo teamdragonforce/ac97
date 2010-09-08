@@ -134,14 +134,14 @@ module AudioGen(
 	assign flash_oe_n = 'h0;
 	assign flash_we_n = 'h1;
 
-	reg [15:0] count = 'h0;
+	reg [23:0] count = 'h0;
 
 	reg [15:0] curr_sample = 'h0;
 	reg [15:0] next_sample = 'h0;
 
 	always @(posedge ac97_bitclk) begin
 		if (ac97_strobe) begin
-			if (count == 'd227821)
+			if (count == 'd247968)
 				count <= 'h0;
 			else
 				count <= count + 1;
