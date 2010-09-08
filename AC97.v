@@ -12,6 +12,11 @@ module AC97(
 	output wire ac97_sync,
 	output wire ac97_reset_b);
 
+	/*AUTOWIRE*/
+	// Beginning of automatic wires (for undeclared instantiated-module outputs)
+	wire		ac97_strobe;		// From link of ACLink.v
+	// End of automatics
+
 	wire        ac97_out_slot1_valid = 1;
         wire [19:0] ac97_out_slot1 = {1'b1 /* read */, 7'h7C /* address */, 12'b0 /* reserved */};
         wire        ac97_out_slot2_valid = 1;
@@ -43,6 +48,7 @@ module AC97(
 		    .ac97_sdata_out	(ac97_sdata_out),
 		    .ac97_sync		(ac97_sync),
 		    .ac97_reset_b	(ac97_reset_b),
+		    .ac97_strobe	(ac97_strobe),
 		    // Inputs
 		    .ac97_bitclk	(ac97_bitclk),
 		    .ac97_sdata_in	(ac97_sdata_in),
