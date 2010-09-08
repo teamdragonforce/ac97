@@ -1,6 +1,6 @@
 TARGET = AC97
 VLOGS = AC97.v chipscope_icon.v chipscope_ila.v
-VLOGS_ALL = $(VLOGS)
+VLOGS_ALL = $(VLOGS) dragonforcesample.hex
 
 all: fpga_target
 
@@ -49,6 +49,9 @@ $(TARGET).twr: $(TARGET)_map.ncd
 
 $(TARGET).bit: $(TARGET).ncd
 	bitgen $(BITGEN_OPTS) $(TARGET).ncd
+
+%.hex: %.raw
+	xxd -p -c 4 -u $< > $@
 
 auto: .DUMMY
 	emacs --batch AC97.v -f verilog-batch-auto
