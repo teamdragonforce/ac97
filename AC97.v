@@ -6,11 +6,20 @@
  */
 
 module AC97(
-	input       ac97_bitclk,
-	input       ac97_sdata_in,
-	output wire ac97_sdata_out,
-	output wire ac97_sync,
-	output wire ac97_reset_b);
+	input              ac97_bitclk,
+	input              ac97_sdata_in,
+	output wire        ac97_sdata_out,
+	output wire        ac97_sync,
+	output wire        ac97_reset_b,
+	input wire         flash_wait,
+	input wire [15:0]  flash_d,
+	output wire [19:0] flash_a,
+	output wire        flash_adv_n,
+	output wire        flash_ce_n,
+	output wire        flash_clk,
+	output wire        flash_oe_n,
+	output wire        flash_we_n
+	);
 
 	/*AUTOWIRE*/
 	// Beginning of automatic wires (for undeclared instantiated-module outputs)
@@ -48,9 +57,17 @@ module AC97(
 			// Outputs
 			.ac97_out_slot3	(ac97_out_slot3[19:0]),
 			.ac97_out_slot4	(ac97_out_slot4[19:0]),
+			.flash_a	(flash_a[19:0]),
+			.flash_adv_n	(flash_adv_n),
+			.flash_ce_n	(flash_ce_n),
+			.flash_clk	(flash_clk),
+			.flash_oe_n	(flash_oe_n),
+			.flash_we_n	(flash_we_n),
 			// Inputs
 			.ac97_bitclk	(ac97_bitclk),
-			.ac97_strobe	(ac97_strobe));
+			.ac97_strobe	(ac97_strobe),
+			.flash_wait	(flash_wait),
+			.flash_d	(flash_d[15:0]));
         
 	ACLink link(
 		/*AUTOINST*/
@@ -99,18 +116,28 @@ module AC97(
 endmodule
 
 module AudioGen(
-	input         ac97_bitclk,
-	input         ac97_strobe,
-	output [19:0] ac97_out_slot3,
-	output [19:0] ac97_out_slot4
+	input             ac97_bitclk,
+	input             ac97_strobe,
+	output [19:0]     ac97_out_slot3,
+	output [19:0]     ac97_out_slot4,
+	input wire        flash_wait,
+	input wire [15:0] flash_d,
+	output reg [19:0] flash_a,
+	output reg        flash_adv_n,
+	output wire       flash_ce_n,
+	output wire       flash_clk,
+	output wire       flash_oe_n,
+	output wire       flash_we_n
 	);
 
-	reg [31:0] samplemem [0:227821];
-	reg [31:0] count = 'h0;
+	assign flash_ce_n = 'h0;
+	assign flash_oe_n = 'h0;
+	assign flash_we_n = 'h1;
 
-	initial $readmemh("dragonforcesample.hex", samplemem, 0, 227821);
+	reg [15:0] count = 'h0;
 
-	reg [31:0] curr_sample = 'h0;
+	reg [15:0] curr_sample = 'h0;
+	reg [15:0] next_sample = 'h0;
 
 	always @(posedge ac97_bitclk) begin
 		if (ac97_strobe) begin
@@ -118,12 +145,22 @@ module AudioGen(
 				count <= 'h0;
 			else
 				count <= count + 1;
+
+			flash_a     <= count;
+			curr_sample <= next_sample;
+			flash_adv_n <= 'h0;
+
+		end else if (!flash_wait) begin
+			flash_adv_n <= 'h1;
+			next_sample <= flash_d;
 		end
-		curr_sample <= samplemem[count];
 	end
 
 	assign ac97_out_slot3 = {curr_sample[7:0],curr_sample[15:8],4'h0};
+	assign ac97_out_slot4 = ac97_out_slot3;
+	/*
 	assign ac97_out_slot4 = {curr_sample[23:16],curr_sample[31:24],4'h0};
+	*/
 endmodule
 
 module SquareWave(
