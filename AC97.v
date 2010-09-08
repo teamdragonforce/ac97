@@ -67,11 +67,13 @@ module AC97(
 endmodule
 
 module ACLink(
-	input ac97_bitclk,
-	input ac97_sdata_in,
-	output wire ac97_sdata_out,
-	output wire ac97_sync,
-	output wire ac97_reset_b,
+	input        ac97_bitclk,
+	input        ac97_sdata_in,
+	output wire  ac97_sdata_out,
+	output wire  ac97_sync,
+	output wire  ac97_reset_b,
+	
+	output wire  ac97_strobe,
 	
 	input [19:0] ac97_out_slot1,
 	input        ac97_out_slot1_valid,
@@ -103,6 +105,30 @@ module ACLink(
 	
 	// We may want to make this into a state machine eventually.
 	reg [7:0] curbit = 8'h0;	// Contains the bit currently on the bus.
+	
+	reg [255:0] inbits = 256'h0;
+	reg [255:0] latched_inbits
+	
+	/* Spec sez: rising edge should be in the middle of the final bit of
+	 * the last slot, and the falling edge should be in the middle of
+	 * the final bit of the TAG slot.
+	 */
+	assign ac97_sync = (curbit == 255) || (curbit < 15); 
+	
+	/* Strobe new data in on the start bit.  New data should be latched
+	 * at that time into slot registers (and should not change until the
+	 * next strobe).  On the cycle after strobe is asserted, data may be
+	 * read out of the output registers; they will be held until the
+	 * next strobe.
+	 */
+	assign ac97_strobe = (curbit == 0);
+	
+	always @(posedge ac97_bitclk) begin
+		if (curbit == 0) begin
+		end
+		curbit <= curbit + 1;
+	end
+	
 	/* Bit order is reversed; msb of tag sent first. */
 	wire [0:255] outbits = { /* TAG */
 	                         1'b1,
@@ -119,6 +145,7 @@ module ACLink(
 	                         ac97_out_slot11_valid,
 	                         ac97_out_slot12_valid,
 	                         3'b000,
+	                         /* and then time slots */
 	                         ac97_out_slot1_valid ? ac97_out_slot1 : 20'h0,
 	                         ac97_out_slot2_valid ? ac97_out_slot2 : 20'h0,
 	                         ac97_out_slot3_valid ? ac97_out_slot3 : 20'h0,
@@ -134,17 +161,9 @@ module ACLink(
 	                         };
 	reg [255:0] inbits = 256'h0;
 	
-	always @(posedge ac97_bitclk)
-		curbit <= curbit + 1;
 	
 	always @(negedge ac97_bitclk)
 		inbits[curbit] <= ac97_sdata_in;
-	
-	/* Spec sez: rising edge should be in the middle of the final bit of
-	 * the last slot, and the falling edge should be in the middle of
-	 * the final bit of the TAG slot.
-	 */
-	assign ac97_sync = (curbit == 255) || (curbit < 15); 
 	
 	/* Spec sez: should transition shortly after the rising edge.  In
 	 * the end, we probably want to flop this to guarantee that.  Sample
