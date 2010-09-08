@@ -1,3 +1,10 @@
+/* AC97 support
+ *
+ * Specifications:
+ *   http://download.intel.com/support/motherboards/desktop/sb/ac97_r23.pdf
+ *   http://www.xilinx.com/products/boards/ml505/datasheets/87560554AD1981B_c.pdf
+ */
+
 module AC97(
 	input       ac97_bitclk,
 	input       ac97_sdata_in,
@@ -66,6 +73,9 @@ module AC97(
 	
 endmodule
 
+/* Timing diagrams for ACLink:
+ *   http://nyus.joshuawise.com/ac97-clocking.scale.jpg
+ */
 module ACLink(
 	input        ac97_bitclk,
 	input        ac97_sdata_in,
@@ -107,7 +117,7 @@ module ACLink(
 	reg [7:0] curbit = 8'h0;	// Contains the bit currently on the bus.
 	
 	reg [255:0] inbits = 256'h0;
-	reg [255:0] latched_inbits
+	reg [255:0] latched_inbits;
 	
 	/* Spec sez: rising edge should be in the middle of the final bit of
 	 * the last slot, and the falling edge should be in the middle of
@@ -115,19 +125,36 @@ module ACLink(
 	 */
 	assign ac97_sync = (curbit == 255) || (curbit < 15); 
 	
-	/* Strobe new data in on the start bit.  New data should be latched
-	 * at that time into slot registers (and should not change until the
-	 * next strobe).  On the cycle after strobe is asserted, data may be
-	 * read out of the output registers; they will be held until the
-	 * next strobe.
-	 */
-	assign ac97_strobe = (curbit == 0);
+	/* The outside world is permitted to read our latched data on the
+	 * rising edge after bit 0 is transmitted.  Bit FF will have been
+	 * latched on its falling edge, which means that on the rising edge
+	 * that still contains bit FF, the "us to outside world" flipflops
+	 * will have been triggered.  Given that, by the rising edge that
+	 * contains bit 0, those flip-flops will have data.  So, the outside
+	 * world strobe will be high on the rising edge that contains bit 0.
+	 *
+	 * Additionally, this strobe controls when the outside world will
+	 * strobe new data into us.  The rising edge will latch new data
+	 * into our inputs.  This data, in theory, will show up in time for
+	 * the falling edge of the bit clock for big 01.
+	 *
+	 * NOTE: We need UCF timing constraints with setup times to make
+	 * sure this happens!
+	 */	 
+	assign ac97_strobe = (curbit == 8'h00);
 	
+	/* The internal strobe for the output flip-flops needs to happen on
+	 * the rising edge that still contains bit FF.
+	 */
 	always @(posedge ac97_bitclk) begin
-		if (curbit == 0) begin
+		if (curbit == 8'hFF) begin
+			latched_inbits <= inbits;
 		end
 		curbit <= curbit + 1;
 	end
+	
+	always @(negedge ac97_bitclk)
+		inbits[curbit] <= ac97_sdata_in;
 	
 	/* Bit order is reversed; msb of tag sent first. */
 	wire [0:255] outbits = { /* TAG */
@@ -159,15 +186,10 @@ module ACLink(
 	                         ac97_out_slot11_valid ? ac97_out_slot11 : 20'h0,
 	                         ac97_out_slot12_valid ? ac97_out_slot12 : 20'h0
 	                         };
-	reg [255:0] inbits = 256'h0;
-	
-	
-	always @(negedge ac97_bitclk)
-		inbits[curbit] <= ac97_sdata_in;
 	
 	/* Spec sez: should transition shortly after the rising edge.  In
-	 * the end, we probably want to flop this to guarantee that.  Sample
-	 * on the falling edge.
+	 * the end, we probably want to flop this to guarantee that (or set
+	 * up UCF constraints as mentioned above).
 	 */
 	assign ac97_sdata_out = outbits[curbit];
 
@@ -182,5 +204,4 @@ module ACLink(
 		.CLK(ac97_bitclk), // IN
 		.TRIG0({'b0, ac97_sdata_out, inbits[curbit], ac97_sync, curbit[7:0]}) // IN BUS [255:0]
 	);
-	
 endmodule
