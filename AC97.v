@@ -23,29 +23,29 @@ module AC97(
 
 	wire [19:0] sample;
 	/* From wave generator */
-        wire        ac97_out_slot3_valid = 1;
-        wire [19:0] ac97_out_slot3;
-        wire        ac97_out_slot4_valid = 1;
-        wire [19:0] ac97_out_slot4;
+	wire        ac97_out_slot3_valid = 1;
+	wire [19:0] ac97_out_slot3;
+	wire        ac97_out_slot4_valid = 1;
+	wire [19:0] ac97_out_slot4;
 	assign ac97_out_slot3 = sample;
 	assign ac97_out_slot4 = sample;
 
-        wire        ac97_out_slot5_valid = 0;
-        wire [19:0] ac97_out_slot5 = 'h0;
-        wire        ac97_out_slot6_valid = 0;
-        wire [19:0] ac97_out_slot6 = 'h0;
-        wire        ac97_out_slot7_valid = 0;
-        wire [19:0] ac97_out_slot7 = 'h0;
-        wire        ac97_out_slot8_valid = 0;
-        wire [19:0] ac97_out_slot8 = 'h0;
-        wire        ac97_out_slot9_valid = 0;
-        wire [19:0] ac97_out_slot9 = 'h0;
-        wire        ac97_out_slot10_valid = 0;
-        wire [19:0] ac97_out_slot10 = 'h0;
-        wire        ac97_out_slot11_valid = 0;
-        wire [19:0] ac97_out_slot11 = 'h0;
-        wire        ac97_out_slot12_valid = 0;
-        wire [19:0] ac97_out_slot12 = 'h0;
+	wire        ac97_out_slot5_valid = 0;
+	wire [19:0] ac97_out_slot5 = 'h0;
+	wire        ac97_out_slot6_valid = 0;
+	wire [19:0] ac97_out_slot6 = 'h0;
+	wire        ac97_out_slot7_valid = 0;
+	wire [19:0] ac97_out_slot7 = 'h0;
+	wire        ac97_out_slot8_valid = 0;
+	wire [19:0] ac97_out_slot8 = 'h0;
+	wire        ac97_out_slot9_valid = 0;
+	wire [19:0] ac97_out_slot9 = 'h0;
+	wire        ac97_out_slot10_valid = 0;
+	wire [19:0] ac97_out_slot10 = 'h0;
+	wire        ac97_out_slot11_valid = 0;
+	wire [19:0] ac97_out_slot11 = 'h0;
+	wire        ac97_out_slot12_valid = 0;
+	wire [19:0] ac97_out_slot12 = 'h0;
 
 	SquareWave wavegen(
 		/*AUTOINST*/
