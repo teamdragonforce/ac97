@@ -109,7 +109,7 @@ module SquareWave(
 
 	reg [3:0] count = 4'b0;
 
-	always @(posedge bitclk) begin
+	always @(posedge ac97_bitclk) begin
 		if (ac97_strobe)
 			count <= count + 1;
 	end
