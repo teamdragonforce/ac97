@@ -51,7 +51,7 @@ $(TARGET).bit: $(TARGET).ncd
 	bitgen $(BITGEN_OPTS) $(TARGET).ncd
 
 %.hex: %.raw
-	xxd -p -c 4 -u $< > $@
+	xxd -p -c 2 -u $< > $@
 
 auto: .DUMMY
 	emacs --batch AC97.v -f verilog-batch-auto
