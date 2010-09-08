@@ -114,7 +114,7 @@ module SquareWave(
 			count <= count + 1;
 	end
 	
-	assign sample = (count[3] ? 20'b0 : 20'hfffff);
+	assign sample = (count[3] ? 20'h80000 : 20'h7ffff);
 endmodule
 
 /* Timing diagrams for ACLink:
