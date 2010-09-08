@@ -13,7 +13,7 @@ module AC97(
 	output wire        ac97_reset_b,
 	input wire         flash_wait,
 	input wire [15:0]  flash_d,
-	output wire [19:0] flash_a,
+	output wire [23:0] flash_a,
 	output wire        flash_adv_n,
 	output wire        flash_ce_n,
 	output wire        flash_clk,
@@ -57,7 +57,7 @@ module AC97(
 			// Outputs
 			.ac97_out_slot3	(ac97_out_slot3[19:0]),
 			.ac97_out_slot4	(ac97_out_slot4[19:0]),
-			.flash_a	(flash_a[19:0]),
+			.flash_a	(flash_a[23:0]),
 			.flash_adv_n	(flash_adv_n),
 			.flash_ce_n	(flash_ce_n),
 			.flash_clk	(flash_clk),
@@ -122,7 +122,7 @@ module AudioGen(
 	output [19:0]     ac97_out_slot4,
 	input wire        flash_wait,
 	input wire [15:0] flash_d,
-	output reg [19:0] flash_a,
+	output reg [23:0] flash_a,
 	output reg        flash_adv_n,
 	output wire       flash_ce_n,
 	output wire       flash_clk,
@@ -156,7 +156,7 @@ module AudioGen(
 		end
 	end
 
-	assign ac97_out_slot3 = {curr_sample[7:0],curr_sample[15:8],4'h0};
+	assign ac97_out_slot3 = {curr_sample[15:8],curr_sample[7:0],4'h0};
 	assign ac97_out_slot4 = ac97_out_slot3;
 	/*
 	assign ac97_out_slot4 = {curr_sample[23:16],curr_sample[31:24],4'h0};
