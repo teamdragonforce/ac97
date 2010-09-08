@@ -52,7 +52,7 @@ module AC97(
 			   // Outputs
 			   .sample		(sample[19:0]),
 			   // Inputs
-			   .bitclk		(bitclk),
+			   .ac97_bitclk		(ac97_bitclk),
 			   .ac97_strobe		(ac97_strobe));
         
 	ACLink link(
@@ -102,14 +102,14 @@ module AC97(
 endmodule
 
 module SquareWave(
-	input        bitclk,
-	input        ac97_strobe,
+	input         ac97_bitclk,
+	input         ac97_strobe,
 	output [19:0] sample
 	);
 
 	reg [3:0] count = 4'b0;
 
-	always @(posedge bitclk) begin
+	always @(posedge ac97_bitclk) begin
 		if (ac97_strobe)
 			count <= count + 1;
 	end
