@@ -21,10 +21,15 @@ module AC97(
 	wire		ac97_strobe;		// From link of ACLink.v
 	// End of automatics
 
-        wire        ac97_out_slot3_valid = 0;
-        wire [19:0] ac97_out_slot3 = 'h0;
-        wire        ac97_out_slot4_valid = 0;
-        wire [19:0] ac97_out_slot4 = 'h0;
+	wire [19:0] sample;
+	/* From wave generator */
+        wire        ac97_out_slot3_valid = 1;
+        wire [19:0] ac97_out_slot3;
+        wire        ac97_out_slot4_valid = 1;
+        wire [19:0] ac97_out_slot4;
+	assign ac97_out_slot3 = sample;
+	assign ac97_out_slot4 = sample;
+
         wire        ac97_out_slot5_valid = 0;
         wire [19:0] ac97_out_slot5 = 'h0;
         wire        ac97_out_slot6_valid = 0;
@@ -41,6 +46,12 @@ module AC97(
         wire [19:0] ac97_out_slot11 = 'h0;
         wire        ac97_out_slot12_valid = 0;
         wire [19:0] ac97_out_slot12 = 'h0;
+
+	SquareWave wavegen(
+		// Outputs
+		.sample		(sample[19:0]),
+		// Inputs
+		.ac97_sync		(ac97_sync));
         
 	ACLink link(
 		/*AUTOINST*/
@@ -86,6 +97,19 @@ module AC97(
 		      // Inputs
 		      .ac97_bitclk	(ac97_bitclk),
 		      .ac97_strobe	(ac97_strobe));
+endmodule
+
+module SquareWave(
+	input        ac97_sync,
+	output [19:0] sample
+	);
+
+	reg [3:0] count = 4'b0;
+
+	always @(posedge ac97_sync)
+		count <= count + 1;
+	
+	assign sample = (count[3] ? 20'b0 : 20'b1);
 endmodule
 
 /* Timing diagrams for ACLink:
